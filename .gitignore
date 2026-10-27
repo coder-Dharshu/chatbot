@@ -1,0 +1,14 @@
+# Environment variables & secrets (CRITICAL: Never commit real API keys)
+.env
+
+# Reports excluded as requested
+PROJECT_REPORT.md
+COMPREHENSIVE_PROJECT_REPORT.md
+
+# Python cache & virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
