@@ -227,6 +227,116 @@
       cursor: pointer;
     }
 
+    /* API Key UI & Status */
+    .key-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: #34d399;
+      margin-top: 6px;
+    }
+
+    .key-badge.missing {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.25);
+      color: #f87171;
+    }
+
+    .key-input-wrapper {
+      position: relative;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-key-save {
+      background: var(--primary-gradient);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+
+    .btn-key-save:hover {
+      opacity: 0.9;
+    }
+
+    .btn-key-clear {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-key-clear:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    .key-notice {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* Modal for Missing Key */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .key-modal {
+      background: #0f172a;
+      border: 1px solid var(--border-focus);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.25);
+      animation: slideDown 0.25s ease;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
     /* Main Chat Layout */
     main {
       flex: 1;
@@ -700,6 +810,11 @@
     </div>
 
     <div class="nav-actions">
+      <button class="btn-icon" id="btn-quick-key" title="Configure Groq API Key">
+        <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+        <span id="header-key-label">API Key</span>
+      </button>
+
       <button class="btn-icon" id="btn-toggle-settings" title="Bot Configuration">
         <svg fill="none" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         <span>Rules & Model</span>
@@ -714,6 +829,18 @@
 
   <!-- Settings Drawer / Modal -->
   <div class="settings-drawer" id="settings-drawer">
+    <div class="setting-group">
+      <div class="setting-label">
+        <span>Groq API Key</span>
+        <span id="drawer-key-status" style="font-size: 11px; text-transform: none; color: #a5b4fc;">Checking...</span>
+      </div>
+      <div class="key-input-wrapper">
+        <input type="password" id="drawer-api-key-input" class="input-custom" placeholder="gsk_..." autocomplete="off">
+        <button class="btn-key-save" id="btn-save-key-drawer">Save</button>
+      </div>
+      <div class="key-notice">Stored locally in your browser. Bypasses server env config.</div>
+    </div>
+
     <div class="setting-group">
       <div class="setting-label">AI Engine Model</div>
       <select id="select-model" class="select-custom"></select>
@@ -741,6 +868,31 @@
       </div>
       <div class="slider-container">
         <input type="range" id="temp-slider" min="0" max="1.0" step="0.1" value="0.2">
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated API Key Modal (Shown if key is missing or when user clicks API Key in nav) -->
+  <div class="modal-overlay" id="api-key-modal">
+    <div class="key-modal">
+      <div class="modal-title">
+        <span>🔑 Enter Groq API Key</span>
+      </div>
+      <div class="modal-desc">
+        To use CodeDoctor AI on Vercel without configuring environment variables, enter your free Groq API key here. It will be securely stored in your browser's LocalStorage.
+      </div>
+      <div class="setting-group">
+        <div class="key-input-wrapper">
+          <input type="password" id="modal-api-key-input" class="input-custom" placeholder="gsk_..." style="font-size: 14px; padding: 12px 14px;" autocomplete="off">
+        </div>
+        <div id="modal-key-status" style="margin-top: 8px;"></div>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px;">
+        <button class="btn-key-clear" id="btn-close-modal">Close</button>
+        <button class="btn-key-save" id="btn-save-key-modal" style="padding: 10px 20px; font-size: 14px;">Save Key</button>
+      </div>
+      <div class="key-notice" style="margin-top: 16px; text-align: center;">
+        Get a free key at <a href="https://console.groq.com/keys" target="_blank" style="color: #818cf8; text-decoration: underline;">console.groq.com/keys</a>
       </div>
     </div>
   </div>
@@ -810,6 +962,7 @@
       temperature: 0.2,
       persona: 'codedoctor',
       customPrompt: '',
+      apiKey: localStorage.getItem('groq_api_key') || '',
       isGenerating: false,
       abortController: null
     };
@@ -837,8 +990,58 @@
       customPromptInput: document.getElementById('custom-prompt-input'),
       tempSlider: document.getElementById('temp-slider'),
       tempVal: document.getElementById('temp-val'),
-      modelBadge: document.getElementById('active-model-badge')
+      modelBadge: document.getElementById('active-model-badge'),
+      // API Key Elements
+      btnQuickKey: document.getElementById('btn-quick-key'),
+      headerKeyLabel: document.getElementById('header-key-label'),
+      drawerApiKeyInput: document.getElementById('drawer-api-key-input'),
+      btnSaveKeyDrawer: document.getElementById('btn-save-key-drawer'),
+      drawerKeyStatus: document.getElementById('drawer-key-status'),
+      apiKeyModal: document.getElementById('api-key-modal'),
+      modalApiKeyInput: document.getElementById('modal-api-key-input'),
+      btnSaveKeyModal: document.getElementById('btn-save-key-modal'),
+      btnCloseModal: document.getElementById('btn-close-modal'),
+      modalKeyStatus: document.getElementById('modal-key-status')
     };
+
+    // Update API Key UI Status
+    function syncApiKeyUI(hasServerKey = false) {
+      const key = state.apiKey.trim();
+      if (key) {
+        const masked = key.slice(0, 7) + '...' + key.slice(-4);
+        elements.headerKeyLabel.textContent = 'Key Active';
+        elements.headerKeyLabel.style.color = '#34d399';
+        elements.drawerKeyStatus.textContent = 'Active: ' + masked;
+        elements.drawerKeyStatus.style.color = '#34d399';
+        elements.drawerApiKeyInput.value = key;
+        elements.modalApiKeyInput.value = key;
+      } else if (hasServerKey) {
+        elements.headerKeyLabel.textContent = 'Server Key';
+        elements.headerKeyLabel.style.color = '#38bdf8';
+        elements.drawerKeyStatus.textContent = 'Configured via Server';
+        elements.drawerKeyStatus.style.color = '#38bdf8';
+        elements.drawerApiKeyInput.placeholder = 'Server key active (or paste custom key)';
+      } else {
+        elements.headerKeyLabel.textContent = 'Set API Key';
+        elements.headerKeyLabel.style.color = '#f87171';
+        elements.drawerKeyStatus.textContent = 'No Key Configured';
+        elements.drawerKeyStatus.style.color = '#f87171';
+        elements.drawerApiKeyInput.placeholder = 'Paste gsk_... here';
+      }
+    }
+
+    function saveApiKey(newKey) {
+      newKey = (newKey || '').trim();
+      if (newKey) {
+        localStorage.setItem('groq_api_key', newKey);
+        state.apiKey = newKey;
+      } else {
+        localStorage.removeItem('groq_api_key');
+        state.apiKey = '';
+      }
+      syncApiKeyUI();
+      fetchModels();
+    }
 
     // Markdown Parser (uses marked with fallback)
     function renderMarkdown(text) {
@@ -862,7 +1065,8 @@
     // Initialize Models
     async function fetchModels() {
       try {
-        const res = await fetch('/api/models');
+        const url = state.apiKey ? `/api/models?api_key=${encodeURIComponent(state.apiKey)}` : '/api/models';
+        const res = await fetch(url);
         if (!res.ok) throw new Error('Failed to load models');
         const data = await res.json();
         state.availableModels = data.models || [data.current];
@@ -878,8 +1082,10 @@
         });
 
         elements.modelBadge.textContent = state.currentModel;
+        syncApiKeyUI(Boolean(data.has_key && !state.apiKey));
       } catch (err) {
         console.error('Error fetching models:', err);
+        syncApiKeyUI(false);
       }
     }
 
@@ -926,9 +1132,37 @@
     });
 
     document.addEventListener('click', (e) => {
-      if (!elements.settingsDrawer.contains(e.target) && e.target !== elements.btnSettings) {
+      if (!elements.settingsDrawer.contains(e.target) && e.target !== elements.btnSettings && !elements.apiKeyModal.contains(e.target)) {
         elements.settingsDrawer.classList.remove('open');
       }
+    });
+
+    // API Key Event Listeners
+    elements.btnQuickKey.addEventListener('click', (e) => {
+      e.stopPropagation();
+      elements.apiKeyModal.classList.add('open');
+      elements.modalApiKeyInput.value = state.apiKey;
+      elements.modalApiKeyInput.focus();
+    });
+
+    elements.btnCloseModal.addEventListener('click', () => {
+      elements.apiKeyModal.classList.remove('open');
+    });
+
+    elements.apiKeyModal.addEventListener('click', (e) => {
+      if (e.target === elements.apiKeyModal) {
+        elements.apiKeyModal.classList.remove('open');
+      }
+    });
+
+    elements.btnSaveKeyDrawer.addEventListener('click', () => {
+      saveApiKey(elements.drawerApiKeyInput.value);
+      alert('Groq API Key saved successfully to browser storage!');
+    });
+
+    elements.btnSaveKeyModal.addEventListener('click', () => {
+      saveApiKey(elements.modalApiKeyInput.value);
+      elements.apiKeyModal.classList.remove('open');
     });
 
     // Setting controls
@@ -1013,7 +1247,8 @@
           temperature: state.temperature,
           max_tokens: 800,
           stream: true,
-          system_prompt: getActiveSystemPrompt()
+          system_prompt: getActiveSystemPrompt(),
+          api_key: state.apiKey ? state.apiKey.trim() : null
         };
 
         const res = await fetch('/api/chat', {

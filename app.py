@@ -12,14 +12,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent
-api_key = os.getenv("GROQ_API_KEY") or os.getenv("Groq_Api") or os.getenv("GROQ_API")
-if not api_key:
-    raise RuntimeError("Missing GROQ_API_KEY or Groq_Api in environment variables.")
-
-client = Groq(api_key=api_key)
+ENV_API_KEY = os.getenv("GROQ_API_KEY") or os.getenv("Groq_Api") or os.getenv("GROQ_API")
 DEFAULT_MODEL = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
 
-app = FastAPI(title="Groq AI Chatbot", version="2.0.0")
+app = FastAPI(title="Groq AI Chatbot", version="2.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,6 +24,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def get_groq_client(custom_key: Optional[str] = None) -> Groq:
+    effective_key = (custom_key or "").strip() or ENV_API_KEY
+    if not effective_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Missing Groq API Key. Please provide your Groq API key in the 'Rules & Model' settings in the UI."
+        )
+    return Groq(api_key=effective_key)
 
 class Message(BaseModel):
     role: str
@@ -40,11 +45,13 @@ class ChatRequest(BaseModel):
     max_tokens: Optional[int] = 800
     stream: Optional[bool] = True
     system_prompt: Optional[str] = None
+    api_key: Optional[str] = None
 
 @app.get("/api/models")
-def get_models():
+def get_models(api_key: Optional[str] = None):
     """Returns available Groq chat models and the active default."""
     try:
+        client = get_groq_client(api_key)
         remote_models = client.models.list()
         chat_models = [
             m.id for m in remote_models.data 
@@ -58,13 +65,15 @@ def get_models():
             chat_models = [DEFAULT_MODEL]
         return {
             "current": DEFAULT_MODEL,
-            "models": chat_models
+            "models": chat_models,
+            "has_key": True
         }
     except Exception as e:
         return {
             "current": DEFAULT_MODEL,
-            "models": [DEFAULT_MODEL, "openai/gpt-oss-120b", "openai/gpt-oss-20b"],
-            "warning": str(e)
+            "models": ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"],
+            "warning": str(e),
+            "has_key": bool(ENV_API_KEY or (api_key and api_key.strip()))
         }
 
 @app.post("/api/chat")
@@ -73,6 +82,7 @@ async def chat(req: ChatRequest):
     if not req.messages:
         raise HTTPException(status_code=400, detail="Messages list cannot be empty.")
 
+    client = get_groq_client(req.api_key)
     selected_model = req.model or DEFAULT_MODEL
     messages_payload = []
 
